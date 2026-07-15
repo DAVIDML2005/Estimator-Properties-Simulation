@@ -1,0 +1,135 @@
+---
+title: "Taller del corte #3"
+author: "David Marquez, Luis Peñaranda, Johan Diaz, Cristian linero y Juan Conrado"
+date: "Marzo 2025"
+output:
+  html_document:
+    toc: true  
+    toc_float: true  
+    theme: cosmo  
+    highlight: tango 
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+------------------------------------------------------------------------
+
+# Punto 2
+
+Se desea verificar empíricamente los resultados del ejercicio anterior.
+
+## Librerías
+
+Importamos las librerias.
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Estimadores
+
+Generamos 10000 muestras aleatorias de tamaño n = 100 de una variable
+uniforme con parámetro 8, calculamos los estimadores para cada muestra y
+lo guardamos en 3 vectores llamados theta1, theta2 y theta3 según el
+estimador correspondiente.
+
+```{r}
+set.seed(1)
+M = 10000
+n = 100
+lim_inf = 0
+lim_sup = 8
+theta1 = rep(NA,M) 
+theta2 = rep(NA,M)
+theta3 = rep(NA,M)
+
+
+for(i in 1:M){
+  x = runif(n, lim_inf, lim_sup)
+  theta1[i] = 2 * mean(x)
+  theta2[i] = max(x)
+  theta3[i] = (n+1) * min(x)
+}
+```
+
+## Histogramas
+
+Dibujamos los histogramas de los 3 estimadores.
+
+```{r}
+par(mfrow =c(1,3))
+hist(theta1, main = expression(hat(theta)[1] ~ "(Momentos)"), 
+     xlab = "", col = "lightblue", border = "white")
+abline(v = lim_sup, col = "red", lwd = 2)
+
+hist(theta2, main = expression(hat(theta)[2] ~ "(MV)"), 
+     xlab = "", col = "lightgreen", border = "white")
+abline(v = lim_sup, col = "red", lwd = 2)
+
+hist(theta3, main = expression(hat(theta)[3] ~ "(Mínimo)"), 
+     xlab = "", col = "lightgoldenrod", border = "white")
+abline(v = lim_sup, col = "red", lwd = 2)
+par(mfrow = c(1, 1))
+```
+
+## Matriz de estimadores
+
+Unimos los 3 vectores con los estimadores en una matriz.
+
+```{r}
+matriz_estimadores <- tibble(theta1, theta2, theta3) %>% 
+  as.data.frame()
+```
+
+## Sesgo y varianzas
+
+Estimamos el sesgo y la varianza para los 3 estimadores. Luego
+comparamos los valores teóricos con los empíricos.
+
+```{r}
+resultados <- tibble(
+  Estimador = c("theta1", "theta2", "theta3"),
+  Media = c(mean(theta1), mean(theta2), mean(theta3)),
+  Sesgo_estimado = c(mean(theta1) - lim_sup, 
+                     mean(theta2) - lim_sup, 
+                     mean(theta3) - lim_sup),
+  Varianza_empirica = c(var(theta1), var(theta2), var(theta3)),
+  Varianza_teorica = c((lim_sup^2)/(3*n), ((lim_sup^2) * n)/((n+2)*((n+1)^2)), ((lim_sup^2)*n)/(n+2))
+)
+
+print(resultados)
+```
+
+## Gráfico de cajas y bigotes
+
+Hacemos una gráfica de cajas y bigotes de la matriz, que incluye los 3
+estimadores y trazamos una línea horizontal mostrando el valor real del
+parámetro θ.
+
+```{r}
+ggplot(mapping = aes(x = rep(c("theta1", "theta2", "theta3"), 
+                             each = M),
+                     y = c(matriz_estimadores$theta1, matriz_estimadores$theta2, matriz_estimadores$theta3),
+                     fill = rep(c("theta1", "theta2", "theta3"), each = M))) +
+  geom_boxplot() +
+  geom_hline(yintercept = lim_sup, linetype = "solid", color = "red") +
+  labs(title = "Comparación de estimadores de θ",
+       subtitle = paste("Línea roja muestra el valor real θ =", lim_sup),
+       y = "Valor estimado",
+       x = "Estimadores") +
+  scale_fill_manual(values = c("lightblue", "lightgreen", "lightgoldenrod")) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+## Conclusión 
+El estimador por momentos (θ̂₁) destaca por ser insesgado (centrado en el valor real θ=8), lo que lo hace confiable en términos de exactitud, aunque con una varianza moderada. El estimador de máxima verosimilitud (θ̂₂) es el más eficiente en precisión (varianza más baja). En contraste, el estimador basado en el mínimo (θ̂₃), aunque teóricamente insesgado, resulta prácticamente ineficiente debido a su alta varianza y sensibilidad a valores extremos, lo que lo hace el menos fiable.
+
+- θ̂₁ es ideal cuando se prioriza insesgamiento.
+- θ̂₂ (ajustado) sería óptimo para precisión, pese a su sesgo.
+- θ̂₃ muestra el peor desempeño, con alta variabilidad y sensibilidad.
+
+Lo resultados empíricos validan la teorícos: θ̂₂ es el más eficiente en varianza, pero θ̂₁ equilibra mejor sesgo y precisión, mientras que θ̂₃ confirma su ineficacia práctica. 
+Es curioso θ̂₃ ya que no presenta sesgo, sino alta sensibilidad de a valores mínimos extremos. Su varianza decrece lentamente con n, haciendo que en muestras finitas parezca "desviado", aunque formalmente sea insesgado. Esto explica por qué es poco útil en la práctica, a pesar de su propiedad teórica de insesgamiento.
