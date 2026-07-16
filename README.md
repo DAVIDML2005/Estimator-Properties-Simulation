@@ -68,9 +68,7 @@ Una mayor eficiencia relativa indica una mayor precisión para un mismo tamaño 
 
 ## Metodología
 
-Las simulaciones se desarrollan completamente en R utilizando métodos de Monte Carlo.
-
-Cada experimento sigue el mismo flujo general de trabajo:
+Las simulaciones se desarrollan completamente en R utilizando métodos de Monte Carlo. Cada experimento sigue el mismo flujo general de trabajo:
 
 1. Definir el modelo poblacional.
 2. Generar un gran número de muestras aleatorias.
