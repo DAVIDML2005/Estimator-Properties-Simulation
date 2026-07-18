@@ -1,6 +1,6 @@
 ---
-title: "Taller del corte #3"
-author: "David Marquez, Luis Peñaranda, Johan Diaz, Cristian linero y Juan Conrado"
+title: "Taller"
+author: "David Ricardo Marquez Luna"
 date: "Marzo 2025"
 output:
   html_document:
